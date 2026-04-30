@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>PCOSense — PCOS Risk Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#FDF8FA}
+body{font-family:'Nunito',sans-serif;font-size:15px;color:#1a1a1a;line-height:1.5}
+
+:root{
+  --rose:#C94B7B;--rose-l:#FBEAF0;--rose-m:#F4C0D1;--rose-d:#4B1528;
+  --teal:#0F8B64;--teal-l:#E1F5EE;--teal-d:#04342C;
+  --amber:#9A6010;--amber-l:#FAEEDA;
+  --red:#A32D2D;--red-l:#FCEBEB;
+  --green:#2E7D32;--green-l:#EAF3DE;
+  --white:#ffffff;
+  --surf:#F6F0F3;
+  --border:#E8D8E0;
+  --txt:#1a1a1a;
+  --muted:#7a6070;
+}
+
+/* ── SHELL ── */
+#shell{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  display:flex;flex-direction:column;
+  max-width:480px;margin:0 auto;
+  background:#FDF8FA;
+}
+
+/* ── HEADER ── */
+#hdr{
+  flex-shrink:0;
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px 10px;
+  background:#FDF8FA;
+  border-bottom:1px solid var(--border);
+}
+.logo-box{width:38px;height:38px;border-radius:11px;background:var(--rose-l);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.app-name{font-family:'Playfair Display',serif;font-size:20px;color:var(--rose-d);line-height:1}
+.app-sub{font-size:11px;color:var(--muted);margin-top:1px}
+
+/* ── SCROLLABLE CONTENT ── */
+#content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:16px 15px 16px}
+
+/* ── BOTTOM NAV ── */
+#bnav{
+  flex-shrink:0;
+  display:flex;
+  background:#fff;
+  border-top:1px solid var(--border);
+  padding:6px 8px 10px;
+  gap:4px;
+}
+.nb{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 4px 5px;border:none;background:transparent;
+  font-family:'Nunito',sans-serif;font-size:10px;font-weight:600;
+  color:var(--muted);cursor:pointer;border-radius:10px;transition:all .2s;
+}
+.nb svg{width:20px;height:20px;stroke-width:1.8;fill:none;stroke:var(--muted);transition:stroke .2s}
+.nb.active{color:var(--rose);background:#FBEAF0}
+.nb.active svg{stroke:var(--rose)}
+.nb .nb-lbl{transition:color .2s}
+
+/* ── SCREENS ── */
+.sc{display:none}.sc.on{display:block}
+
+/* ── HOME ── */
+.hero{background:var(--rose-l);border-radius:18px;padding:20px 17px 18px;margin-bottom:14px}
+.hero-pill{display:inline-block;background:#F4C0D160;border:1px solid var(--rose-m);color:#72243E;font-size:11px;font-weight:700;letter-spacing:.07em;padding:3px 11px;border-radius:20px;margin-bottom:11px;text-transform:uppercase}
+.hero-title{font-family:'Playfair Display',serif;font-size:27px;color:var(--rose-d);line-height:1.2;margin-bottom:9px}
+.hero-body{font-size:13.5px;color:#5a2030;line-height:1.55;margin-bottom:18px}
+.btn-p{width:100%;padding:14px;background:var(--rose);color:#fff;border:none;border-radius:13px;font-size:15px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;letter-spacing:.01em}
+.btn-p:active{opacity:.85}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.fc{background:#fff;border:1px solid var(--border);border-radius:15px;padding:14px 13px}
+.fi{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:9px}
+.ft{font-size:13.5px;font-weight:700;color:var(--txt);margin-bottom:3px}
+.fs{font-size:11.5px;color:var(--muted);line-height:1.4}
+.info-box{background:var(--surf);border-radius:13px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6}
+
+/* ── FORM ── */
+.prog-wrap{margin-bottom:15px}
+.prog-top{display:flex;justify-content:space-between;margin-bottom:7px}
+.prog-lbl{font-size:12.5px;font-weight:600;color:var(--muted)}
+.prog-pct{font-size:12.5px;color:var(--rose);font-weight:700}
+.prog-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:5px;border-radius:3px;background:var(--rose);transition:width .45s ease}
+
+.fsec{background:#fff;border:1px solid var(--border);border-radius:15px;padding:16px 15px;margin-bottom:12px}
+.fsec-ttl{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.field{margin-bottom:15px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:14px;font-weight:600;color:var(--txt);margin-bottom:7px}
+.field input,.field select{
+  width:100%;padding:13px 14px;
+  border:1.5px solid var(--border);border-radius:11px;
+  font-size:15px;font-family:'Nunito',sans-serif;
+  background:#fff;color:var(--txt);
+  -webkit-appearance:none;appearance:none;
+}
+.field input:focus,.field select:focus{outline:none;border-color:var(--rose);box-shadow:0 0 0 3px #C94B7B18}
+.field input[readonly]{background:var(--surf);color:var(--muted)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bmi-tag{display:inline-block;margin-top:7px;padding:5px 12px;border-radius:7px;font-size:12.5px;font-weight:700}
+
+.sld-wrap{display:flex;align-items:center;gap:10px}
+.sld-wrap input[type=range]{flex:1;accent-color:var(--rose);height:4px}
+.sld-val{min-width:28px;text-align:right;font-size:18px;font-weight:700;color:var(--rose)}
+.sld-hint{font-size:11px;color:var(--muted);margin-top:5px}
+
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:7px}
+.opt{
+  padding:13px 15px;border:1.5px solid var(--border);border-radius:11px;
+  font-size:14px;cursor:pointer;background:#fff;color:var(--txt);
+  font-family:'Nunito',sans-serif;font-weight:500;text-align:left;
+  transition:all .15s;
+}
+.opt.sel{background:var(--rose-l);border-color:var(--rose);color:var(--rose-d);font-weight:700}
+.opt:active{opacity:.8}
+.opt-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px}
+.opt-row .opt{text-align:center}
+
+.btn-next{width:100%;padding:14px;background:var(--rose);color:#fff;border:none;border-radius:13px;font-size:15px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;margin-top:4px;margin-bottom:8px}
+.btn-next:active{opacity:.85}
+
+/* ── RESULTS ── */
+.risk-card{border-radius:17px;padding:17px 16px;margin-bottom:13px}
+.risk-top{display:flex;align-items:center;gap:13px;margin-bottom:9px}
+.risk-badge{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.risk-title{font-family:'Playfair Display',serif;font-size:23px;line-height:1.1}
+.risk-cmr{font-size:12px;margin-top:3px;font-weight:700}
+.risk-desc{font-size:13.5px;line-height:1.55}
+
+.sc2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:13px}
+.sc3{grid-column:span 2}
+.stile{background:#fff;border:1px solid var(--border);border-radius:15px;padding:14px 13px}
+.snum{font-family:'Playfair Display',serif;font-size:30px;line-height:1}
+.sden{font-size:14px;color:var(--muted);font-weight:400}
+.slbl{font-size:11px;color:var(--muted);margin-top:3px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.sbar{height:5px;background:var(--surf);border-radius:3px;margin-top:11px;overflow:hidden}
+.sbar-f{height:5px;border-radius:3px;transition:width .9s}
+
+.sec-lbl{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 9px}
+.ins{background:#fff;border:1px solid var(--border);border-radius:13px;padding:13px 14px;margin-bottom:9px;display:flex;gap:11px;align-items:flex-start}
+.ins-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.ins-t{font-size:14px;font-weight:700;line-height:1.4;color:var(--txt)}
+.ins-s{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+.rec{background:var(--teal-l);border:1px solid #9FE1CB;border-radius:13px;padding:13px 14px;margin-bottom:9px;font-size:13.5px;color:var(--teal-d);line-height:1.55;font-weight:500}
+.btn-dl{width:100%;padding:14px;background:transparent;border:1.5px solid var(--border);border-radius:13px;font-size:14.5px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;color:var(--txt);margin-top:6px}
+.btn-dl:active{background:var(--surf)}
+.btn-rs{width:100%;padding:13px;background:var(--surf);border:1px solid var(--border);border-radius:13px;font-size:13px;font-weight:500;font-family:'Nunito',sans-serif;cursor:pointer;color:var(--muted);margin-top:9px;margin-bottom:4px}
+
+/* ── DASHBOARD ── */
+.dcrd{background:#fff;border:1px solid var(--border);border-radius:15px;padding:16px 15px;margin-bottom:13px}
+.dttl{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.hm-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
+.hm-cell{border-radius:11px;padding:13px 10px;text-align:center}
+.hm-num{font-family:'Playfair Display',serif;font-size:24px;font-weight:600}
+.hm-lbl{font-size:11.5px;margin-top:4px;font-weight:600;line-height:1.35}
+.hm-leg{display:flex;flex-wrap:wrap;gap:9px}
+.hm-leg span{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.hm-leg i{width:10px;height:10px;border-radius:2px;display:inline-block;flex-shrink:0}
+.gauge-row{display:flex;align-items:center;gap:14px}
+.gi{flex:1}
+.adh-lev{font-size:15px;font-weight:700;margin-bottom:7px}
+.arisk{padding:8px 11px;border-radius:9px;font-size:12.5px;font-weight:700;margin-bottom:7px}
+.chart-wrap{position:relative;width:100%;height:240px}
+.no-data{padding:24px;text-align:center;color:var(--muted);font-size:13px;grid-column:span 2}
+</style>
+</head>
+<body>
+
+<div id="shell">
+
+  <!-- HEADER -->
+  <div id="hdr">
+    <div class="logo-box">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C94B7B" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    </div>
+    <div>
+      <div class="app-name">PCOSense</div>
+      <div class="app-sub">Clinical Decision-Support Tool</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- HOME -->
+    <div class="sc on" id="sc-home">
+      <div class="hero">
+        <div class="hero-pill">PCOS Risk Assessment</div>
+        <div class="hero-title">Know your risk.<br>Take control early.</div>
+        <div class="hero-body">A clinical tool combining cardiometabolic risk, quality of life, and medication adherence into one unified profile.</div>
+        <button class="btn-p" onclick="goTab('assess')">Begin Assessment</button>
+      </div>
+      <div class="feat-grid">
+        <div class="fc">
+          <div class="fi" style="background:#FBEAF0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C94B7B" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+          <div class="ft">CMR Score</div>
+          <div class="fs">Cardiometabolic risk via BMI, lipids & glycemia</div>
+        </div>
+        <div class="fc">
+          <div class="fi" style="background:#E1F5EE"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F8B64" stroke-width="2" stroke-linecap="round"><path d="M4 15l5-5 4 4 7-7"/></svg></div>
+          <div class="ft">QoL Score</div>
+          <div class="fs">PCOSQ quality of life across 5 domains</div>
+        </div>
+        <div class="fc">
+          <div class="fi" style="background:#FAEEDA"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A6010" stroke-width="2" stroke-linecap="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M9 9h6M9 13h4"/></svg></div>
+          <div class="ft">Adherence</div>
+          <div class="fs">MMAS-8 medication adherence score</div>
+        </div>
+        <div class="fc">
+          <div class="fi" style="background:#EAF3DE"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+          <div class="ft">PDF Report</div>
+          <div class="fs">Download full clinical summary</div>
+        </div>
+      </div>
+      <div class="info-box">This tool supports clinical decision-making and self-monitoring. Results are indicative only — always consult a qualified healthcare provider for medical advice.</div>
+    </div>
+
+    <!-- ASSESS -->
+    <div class="sc" id="sc-assess">
+      <div class="prog-wrap">
+        <div class="prog-top">
+          <div class="prog-lbl" id="progLbl">Step 1 of 3 — Cardiometabolic</div>
+          <div class="prog-pct" id="progPct">33%</div>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:33%"></div></div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div id="step1">
+        <div class="fsec">
+          <div class="fsec-ttl">Personal & Anthropometric</div>
+          <div class="field"><label>Age (years)</label><input type="number" id="age" inputmode="numeric" placeholder="e.g. 28" min="12" max="65"></div>
+          <div class="row2">
+            <div class="field"><label>Weight (kg)</label><input type="number" id="weight" inputmode="decimal" placeholder="68" step="0.1" oninput="calcBMI()"></div>
+            <div class="field"><label>Height (m)</label><input type="number" id="height" inputmode="decimal" placeholder="1.65" step="0.01" oninput="calcBMI()"></div>
+          </div>
+          <div class="field"><label>BMI (auto-calculated)</label><input type="text" id="bmi" readonly placeholder="—"><div id="bmiTag"></div></div>
+        </div>
+        <div class="fsec">
+          <div class="fsec-ttl">Lipid Profile</div>
+          <div class="field"><label>Triglycerides (mg/dL)</label><input type="number" id="tg" inputmode="numeric" placeholder="e.g. 120"></div>
+          <div class="field"><label>HDL Cholesterol (mg/dL)</label><input type="number" id="hdl" inputmode="numeric" placeholder="e.g. 55"></div>
+        </div>
+        <div class="fsec">
+          <div class="fsec-ttl">Glycemic Status</div>
+          <div class="field">
+            <label>Current classification</label>
+            <div class="opts">
+              <button class="opt" onclick="pickOpt('glycemic','Normal',this)">Normal glycemia</button>
+              <button class="opt" onclick="pickOpt('glycemic','Prediabetes',this)">Prediabetes (IFG / IGT)</button>
+              <button class="opt" onclick="pickOpt('glycemic','Diabetes',this)">Type 2 Diabetes</button>
+            </div>
+            <input type="hidden" id="glycemic" value="">
+          </div>
+        </div>
+        <button class="btn-next" onclick="toStep(2)">Continue to Quality of Life →</button>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="step2" style="display:none">
+        <div class="fsec">
+          <div class="fsec-ttl">Quality of Life — PCOSQ Domains</div>
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:15px;line-height:1.55"><strong style="color:var(--txt)">1</strong> = severely affected &nbsp;·&nbsp; <strong style="color:var(--txt)">7</strong> = not affected at all</div>
+          <div id="qolFields"></div>
+        </div>
+        <button class="btn-next" onclick="toStep(3)">Continue to Adherence →</button>
+      </div>
+
+      <!-- STEP 3 -->
+      <div id="step3" style="display:none">
+        <div class="fsec">
+          <div class="fsec-ttl">Medication Adherence — MMAS-8</div>
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:15px;line-height:1.55">Answer honestly — this personalises your care recommendations.</div>
+          <div id="mmasFields"></div>
+        </div>
+        <button class="btn-next" onclick="calculate()">Calculate My Risk Profile</button>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="sc" id="sc-results">
+      <div id="riskBanner"></div>
+      <div class="sc2" id="scoresGrid"></div>
+      <div class="sec-lbl">Clinical Insights</div>
+      <div id="insightsBox"></div>
+      <div class="sec-lbl">Recommendations</div>
+      <div id="recsBox"></div>
+      <button class="btn-dl" onclick="downloadPDF()">⬇ Download PDF Report</button>
+      <button class="btn-rs" onclick="resetApp()">Start New Assessment</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="sc" id="sc-dash">
+      <div class="dcrd">
+        <div class="dttl">QoL Domain Heatmap</div>
+        <div class="hm-grid" id="hmGrid"><div class="no-data">Complete the assessment to view your QoL heatmap.</div></div>
+        <div class="hm-leg">
+          <span><i style="background:#E24B4A"></i>Severe (1–2)</span>
+          <span><i style="background:#EF9F27"></i>Moderate (3–4)</span>
+          <span><i style="background:#97C459"></i>Good (5–7)</span>
+        </div>
+      </div>
+      <div class="dcrd">
+        <div class="dttl">Adherence Risk Predictor</div>
+        <div class="gauge-row">
+          <svg width="120" height="72" viewBox="0 0 120 72">
+            <path d="M10 66 A50 50 0 0 1 110 66" fill="none" stroke="#EDD8E4" stroke-width="14" stroke-linecap="round"/>
+            <path id="gArc" d="M10 66 A50 50 0 0 1 110 66" fill="none" stroke="#C94B7B" stroke-width="14" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="157" style="transition:stroke-dashoffset 1.1s ease"/>
+            <text id="gNum" x="60" y="62" text-anchor="middle" font-family="'Playfair Display',serif" font-size="21" fill="#1a1a1a">—</text>
+          </svg>
+          <div class="gi">
+            <div class="adh-lev" id="adhLev" style="color:var(--muted)">Complete assessment first</div>
+            <div id="adhRisks"></div>
+          </div>
+        </div>
+      </div>
+      <div class="dcrd">
+        <div class="dttl">Risk Profile Radar</div>
+        <div class="chart-wrap">
+          <canvas id="radarC" role="img" aria-label="Radar chart showing five PCOS clinical dimensions">PCOS risk profile radar chart.</canvas>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV -->
+  <nav id="bnav">
+    <button class="nb active" id="nb-home" onclick="goTab('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="nb-lbl">Home</span>
+    </button>
+    <button class="nb" id="nb-assess" onclick="goTab('assess')">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span class="nb-lbl">Assess</span>
+    </button>
+    <button class="nb" id="nb-results" onclick="goTab('results')">
+      <svg viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+      <span class="nb-lbl">Results</span>
+    </button>
+    <button class="nb" id="nb-dash" onclick="goTab('dash')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="nb-lbl">Dashboard</span>
+    </button>
+  </nav>
+
+</div><!-- /shell -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const QOL_D=[
+  {id:'qe',lbl:'Emotional wellbeing',q:'How much has PCOS affected your emotional health?'},
+  {id:'qb',lbl:'Body hair / hirsutism',q:'How much does excess body hair affect you?'},
+  {id:'qw',lbl:'Weight concerns',q:'How much does your weight affect daily life?'},
+  {id:'qi',lbl:'Infertility concerns',q:'How much do fertility concerns affect you?'},
+  {id:'qm',lbl:'Menstrual problems',q:'How much do menstrual irregularities affect you?'}
+];
+const MMAS=[
+  {id:'m1',q:'Do you sometimes forget to take your PCOS medication?'},
+  {id:'m2',q:'Over the past 2 weeks, were there days when you skipped your medication?'},
+  {id:'m3',q:'Have you ever stopped medication without telling your doctor?'},
+  {id:'m4',q:'When travelling, do you sometimes forget your medication?'},
+  {id:'m5',q:'Did you take your medication yesterday?',inv:true},
+  {id:'m6',q:'Do you stop when symptoms feel controlled?'},
+  {id:'m7',q:'Do you feel bothered by sticking to your medication schedule?'},
+  {id:'m8',q:'How often do you have trouble remembering your medication?',freq:true}
+];
+let ST={};
+
+function buildForms(){
+  const qc=document.getElementById('qolFields');
+  QOL_D.forEach(d=>{
+    qc.innerHTML+=`<div class="field"><label>${d.lbl}</label><div style="font-size:12px;color:var(--muted);margin-bottom:7px">${d.q}</div><div class="sld-wrap"><span style="font-size:11px;color:var(--muted);width:10px">1</span><input type="range" id="${d.id}" min="1" max="7" value="4" step="1" oninput="document.getElementById('${d.id}v').textContent=this.value"><span class="sld-val" id="${d.id}v">4</span></div><div class="sld-hint">1 = Severely affected &nbsp;·&nbsp; 7 = Not affected</div></div>`;
+  });
+  const mc=document.getElementById('mmasFields');
+  MMAS.forEach((m,i)=>{
+    if(m.freq){
+      mc.innerHTML+=`<div class="field"><label>${i+1}. ${m.q}</label><div class="opts"><button class="opt" onclick="pickOpt('${m.id}','0',this)">Never / Rarely</button><button class="opt" onclick="pickOpt('${m.id}','0.5',this)">Sometimes</button><button class="opt" onclick="pickOpt('${m.id}','1',this)">Usually / Always</button></div><input type="hidden" id="${m.id}" value="0"></div>`;
+    } else {
+      mc.innerHTML+=`<div class="field"><label>${i+1}. ${m.q}</label><div class="opt-row"><button class="opt" onclick="pickOpt('${m.id}','yes',this)">Yes</button><button class="opt" onclick="pickOpt('${m.id}','no',this)">No</button></div><input type="hidden" id="${m.id}" value="no"></div>`;
+    }
+  });
+}
+
+function pickOpt(id,val,el){
+  el.closest('.opts,.opt-row').querySelectorAll('.opt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById(id).value=val;
+}
+
+function calcBMI(){
+  const w=parseFloat(document.getElementById('weight').value);
+  const h=parseFloat(document.getElementById('height').value);
+  if(w&&h&&h>0.5&&h<3){
+    const b=w/(h*h);
+    document.getElementById('bmi').value=b.toFixed(1);
+    let cat,col,bg;
+    if(b<18.5){cat='Underweight';col='#185FA5';bg='#E6F1FB'}
+    else if(b<25){cat='Normal weight';col='#2E7D32';bg='#EAF3DE'}
+    else if(b<30){cat='Overweight';col='#9A6010';bg='#FAEEDA'}
+    else{cat='Obese';col='#A32D2D';bg='#FCEBEB'}
+    document.getElementById('bmiTag').innerHTML=`<span class="bmi-tag" style="background:${bg};color:${col}">${cat}</span>`;
+  }
+}
+
+function toStep(n){
+  if(n===2&&!valStep1())return;
+  document.getElementById('step'+(n-1)).style.display='none';
+  document.getElementById('step'+n).style.display='block';
+  const pcts=[33,66,100];
+  const lbls=['','Cardiometabolic','Quality of Life (PCOSQ)','Medication Adherence (MMAS-8)'];
+  document.getElementById('progFill').style.width=pcts[n-1]+'%';
+  document.getElementById('progLbl').textContent=`Step ${n} of 3 — ${lbls[n]}`;
+  document.getElementById('progPct').textContent=pcts[n-1]+'%';
+  document.getElementById('content').scrollTop=0;
+}
+
+function valStep1(){
+  const needs=['weight','height','glycemic'];
+  for(const id of needs){
+    const el=document.getElementById(id);
+    if(!el||!el.value){
+      if(el){el.focus();el.style.borderColor='var(--red)';setTimeout(()=>el.style.borderColor='',2500);}
+      return false;
+    }
+  }
+  return true;
+}
+
+function cmrCalc(){
+  const bmi=parseFloat(document.getElementById('bmi').value)||0;
+  const tg=parseFloat(document.getElementById('tg').value)||0;
+  const hdl=parseFloat(document.getElementById('hdl').value)||0;
+  const g=document.getElementById('glycemic').value;
+  let s=0;
+  if(bmi>25)s++;if(tg>150)s++;
+  if(hdl>0&&hdl<50)s++;
+  if(g==='Prediabetes')s++;
+  if(g==='Diabetes')s+=2;
+  return Math.min(s,5);
+}
+function qolCalc(){
+  const v=QOL_D.map(d=>parseInt(document.getElementById(d.id).value));
+  return parseFloat((v.reduce((a,b)=>a+b,0)/v.length).toFixed(1));
+}
+function adhCalc(){
+  let s=8;
+  ['m1','m2','m3','m4','m6','m7'].forEach(id=>{if(document.getElementById(id).value==='yes')s--;});
+  if(document.getElementById('m5').value==='no')s--;
+  s-=parseFloat(document.getElementById('m8').value||0);
+  return Math.max(0,parseFloat(s.toFixed(1)));
+}
+function rLbl(c){return c<=1?'Low Risk':c<=3?'Moderate Risk':'High Risk'}
+function rCol(c){return c<=1?'#2E7D32':c<=3?'#9A6010':'#A32D2D'}
+function rBg(c){return c<=1?'#EAF3DE':c<=3?'#FAEEDA':'#FCEBEB'}
+
+function calculate(){
+  const cmr=cmrCalc(),qol=qolCalc(),adh=adhCalc();
+  ST={cmr,qol,adh,
+    bmi:parseFloat(document.getElementById('bmi').value)||0,
+    tg:parseFloat(document.getElementById('tg').value)||0,
+    hdl:parseFloat(document.getElementById('hdl').value)||0,
+    glycemic:document.getElementById('glycemic').value,
+    qolDomains:QOL_D.map(d=>({lbl:d.lbl,val:parseInt(document.getElementById(d.id).value)}))
+  };
+  renderResults();renderDash();goTab('results');
+}
+
+function renderResults(){
+  const {cmr,qol,adh}=ST;
+  const col=rCol(cmr),bg=rBg(cmr),lbl=rLbl(cmr);
+  document.getElementById('riskBanner').innerHTML=`<div class="risk-card" style="background:${bg}"><div class="risk-top"><div class="risk-badge" style="background:${col}22"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div><div class="risk-title" style="color:${col}">${lbl}</div><div class="risk-cmr" style="color:${col}">CMR Score: ${cmr} / 5</div></div></div><div class="risk-desc" style="color:${col}">${cmr<=1?'Your metabolic parameters are within healthy ranges. Keep up your current habits.':cmr<=3?'Lifestyle modifications and closer monitoring are recommended.':'Immediate clinical evaluation and follow-up is strongly advised.'}</div></div>`;
+
+  const qC=qol>=5?'#2E7D32':qol>=3?'#9A6010':'#A32D2D';
+  const aC=adh>=6?'#2E7D32':adh>=4?'#9A6010':'#A32D2D';
+  document.getElementById('scoresGrid').innerHTML=`
+    <div class="stile"><div class="snum" style="color:${col}">${cmr}<span class="sden">/5</span></div><div class="slbl">CMR Score</div><div class="sbar"><div class="sbar-f" style="width:${cmr/5*100}%;background:${col}"></div></div></div>
+    <div class="stile"><div class="snum" style="color:${qC}">${qol}<span class="sden">/7</span></div><div class="slbl">QoL Score</div><div class="sbar"><div class="sbar-f" style="width:${qol/7*100}%;background:${qC}"></div></div></div>
+    <div class="stile sc3"><div class="snum" style="color:${aC}">${adh.toFixed(1)}<span class="sden">/8</span></div><div class="slbl">Adherence Score</div><div class="sbar"><div class="sbar-f" style="width:${adh/8*100}%;background:${aC}"></div></div></div>`;
+
+  const ins=[];
+  if(cmr>=4)ins.push({d:'#A32D2D',t:'High cardiometabolic risk detected',s:'Multiple metabolic parameters elevated — urgent clinical evaluation warranted.'});
+  if(ST.tg>150)ins.push({d:'#9A6010',t:`Elevated triglycerides (${ST.tg} mg/dL)`,s:'Exceeds 150 mg/dL threshold. Associated with insulin resistance in PCOS.'});
+  if(ST.hdl>0&&ST.hdl<50)ins.push({d:'#9A6010',t:`Low HDL cholesterol (${ST.hdl} mg/dL)`,s:'Below the 50 mg/dL protective threshold for women.'});
+  if(ST.glycemic==='Prediabetes')ins.push({d:'#9A6010',t:'Prediabetes — early intervention critical',s:'Lifestyle changes can prevent progression to Type 2 Diabetes.'});
+  if(ST.glycemic==='Diabetes')ins.push({d:'#A32D2D',t:'Type 2 Diabetes — metabolic scoring elevated',s:'Structured endocrinology management plan strongly recommended.'});
+  if(adh<4)ins.push({d:'#A32D2D',t:'Low medication adherence',s:'MMAS-8 score indicates poor adherence. Reminders and counselling recommended.'});
+  else if(adh<6)ins.push({d:'#9A6010',t:'Moderate medication adherence',s:'Consider pill organisers or simplified regimens to improve consistency.'});
+  if(qol<3)ins.push({d:'#A32D2D',t:'Poor quality of life',s:'Significant impact across PCOSQ domains. Psychological support is advised.'});
+  if(ST.bmi>25)ins.push({d:'#9A6010',t:`BMI ${ST.bmi} — above healthy range`,s:'Weight management is a core PCOS intervention strategy.'});
+  if(!ins.length)ins.push({d:'#2E7D32',t:'Low overall risk profile',s:'Parameters within healthy ranges. Annual monitoring is recommended.'});
+  document.getElementById('insightsBox').innerHTML=ins.map(i=>`<div class="ins"><div class="ins-dot" style="background:${i.d}"></div><div><div class="ins-t">${i.t}</div><div class="ins-s">${i.s}</div></div></div>`).join('');
+
+  const recs=[];
+  if(cmr>=3||ST.bmi>25)recs.push('Adopt a low-glycaemic-index diet — reduce processed sugars and refined carbohydrates.');
+  if(ST.tg>150)recs.push('Increase omega-3 intake (fatty fish, flaxseed) and reduce trans-fat consumption.');
+  if(adh<6)recs.push('Set daily medication reminders using a phone alarm or pill organiser.');
+  if(qol<4)recs.push('Consider joining a PCOS support group or seeking cognitive-behavioural therapy.');
+  if(ST.glycemic!=='Normal'&&ST.glycemic)recs.push('Schedule HbA1c testing every 3–6 months. Follow up with your endocrinologist.');
+  recs.push('Aim for at least 150 minutes of moderate aerobic activity weekly, plus resistance training.');
+  if(cmr>=4)recs.push('Book a comprehensive cardiometabolic panel with your clinician within 4 weeks.');
+  document.getElementById('recsBox').innerHTML=recs.map(r=>`<div class="rec">${r}</div>`).join('');
+}
+
+function renderDash(){
+  if(!ST.qolDomains)return;
+  const hm=document.getElementById('hmGrid');hm.innerHTML='';
+  ST.qolDomains.forEach(d=>{
+    const v=d.val;
+    let bg,tc;
+    if(v<=2){bg='#FCEBEB';tc='#A32D2D'}
+    else if(v<=4){bg='#FAEEDA';tc='#854F0B'}
+    else{bg='#EAF3DE';tc='#2E7D32'}
+    hm.innerHTML+=`<div class="hm-cell" style="background:${bg}"><div class="hm-num" style="color:${tc}">${v}</div><div class="hm-lbl" style="color:${tc}">${d.lbl}</div></div>`;
+  });
+
+  const arc=157*(ST.adh/8);
+  const gc=ST.adh>=6?'#2E7D32':ST.adh>=4?'#9A6010':'#A32D2D';
+  document.getElementById('gArc').style.stroke=gc;
+  setTimeout(()=>{document.getElementById('gArc').style.strokeDashoffset=(157-arc);},120);
+  document.getElementById('gNum').textContent=ST.adh.toFixed(1);
+  const aLbl=ST.adh>=6?'High Adherence':ST.adh>=4?'Moderate Adherence':'Low Adherence';
+  document.getElementById('adhLev').textContent=aLbl;
+  document.getElementById('adhLev').style.color=gc;
+  const risks=[
+    {t:aLbl,c:gc},
+    {t:`CMR: ${rLbl(ST.cmr)}`,c:rCol(ST.cmr)},
+    {t:`QoL: ${ST.qol>=5?'Good':ST.qol>=3?'Moderate':'Poor'}`,c:ST.qol>=5?'#2E7D32':ST.qol>=3?'#9A6010':'#A32D2D'}
+  ];
+  document.getElementById('adhRisks').innerHTML=risks.map(r=>`<div class="arisk" style="background:${r.c}18;color:${r.c}">${r.t}</div>`).join('');
+
+  if(window._rc)window._rc.destroy();
+  const ctx=document.getElementById('radarC').getContext('2d');
+  window._rc=new Chart(ctx,{
+    type:'radar',
+    data:{
+      labels:['CMR Safety','QoL','Adherence','Lipid Health','Weight Status'],
+      datasets:[{label:'Your Risk Profile',
+        data:[
+          Math.round((1-ST.cmr/5)*100),
+          Math.round(ST.qol/7*100),
+          Math.round(ST.adh/8*100),
+          Math.round(ST.tg>0?Math.max(0,(1-Math.min(ST.tg/300,1)))*100:70),
+          Math.round(ST.bmi>0?(ST.bmi<25?90:ST.bmi<30?60:30):50)
+        ],
+        backgroundColor:'rgba(201,75,123,0.12)',borderColor:'#C94B7B',borderWidth:2,
+        pointBackgroundColor:'#C94B7B',pointRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{r:{min:0,max:100,ticks:{display:false},
+        grid:{color:'rgba(150,150,150,0.15)'},
+        angleLines:{color:'rgba(150,150,150,0.15)'},
+        pointLabels:{font:{size:11,family:'Nunito,sans-serif'},color:'#7a6070'}}}}
+  });
+}
+
+function goTab(id){
+  ['home','assess','results','dash'].forEach(t=>{
+    document.getElementById('sc-'+t).classList.toggle('on',t===id);
+    const b=document.getElementById('nb-'+t);
+    if(b)b.classList.toggle('active',t===id);
+  });
+  document.getElementById('content').scrollTop=0;
+}
+
+function downloadPDF(){
+  if(ST.cmr===undefined){alert('Please complete the assessment first.');return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const R=[201,75,123],T=[15,139,100];
+  doc.setFillColor(...R);doc.rect(0,0,210,36,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(22);doc.setFont('helvetica','bold');
+  doc.text('PCOSense',13,15);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');
+  doc.text('Clinical PCOS Risk Assessment Report',13,23);
+  doc.text(`Generated: ${new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'})}`,13,30);
+  let y=46;
+  const sec=(title,bgC,yy)=>{doc.setFillColor(...bgC);doc.roundedRect(12,yy,186,8,2,2,'F');doc.setTextColor(255,255,255);doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text(title,16,yy+5.5);doc.setTextColor(50,50,50);doc.setFont('helvetica','normal');return yy+14};
+  const cmrC=ST.cmr<=1?[46,125,50]:ST.cmr<=3?[154,96,16]:[163,45,45];
+  y=sec(`Cardiometabolic Risk: ${rLbl(ST.cmr)} — Score ${ST.cmr}/5`,cmrC,y);
+  doc.setFontSize(9);
+  [`BMI: ${ST.bmi} kg/m²`,`TG: ${ST.tg||'—'} mg/dL`,`HDL: ${ST.hdl||'—'} mg/dL`,`Glycemic: ${ST.glycemic||'—'}`].forEach((r,i)=>{doc.text(r,16+(i%2)*95,y+(Math.floor(i/2)*6));});y+=18;
+  const qC2=ST.qol>=5?[46,125,50]:ST.qol>=3?[154,96,16]:[163,45,45];
+  y=sec(`Quality of Life (PCOSQ): ${ST.qol}/7`,qC2,y);
+  ST.qolDomains.forEach((d,i)=>{doc.setFontSize(9);doc.text(`${d.lbl}: ${d.val}/7`,16+(i%2)*95,y+(Math.floor(i/2)*6));});y+=22;
+  const aC2=ST.adh>=6?[46,125,50]:ST.adh>=4?[154,96,16]:[163,45,45];
+  y=sec(`Medication Adherence (MMAS-8): ${ST.adh.toFixed(1)}/8`,aC2,y);
+  doc.setFontSize(9);doc.text(ST.adh>=6?'High Adherence — Keep it up':ST.adh>=4?'Moderate Adherence — Improvements advised':'Low Adherence — Intervention required',16,y);y+=12;
+  y=sec('Personalised Recommendations',T,y);
+  document.querySelectorAll('.rec').forEach((r,i)=>{
+    doc.setFontSize(8.5);
+    const lines=doc.splitTextToSize(`${i+1}. ${r.textContent}`,178);
+    doc.text(lines,16,y);y+=lines.length*5+2;
+    if(y>272){doc.addPage();y=20;}
+  });
+  y+=4;doc.setFillColor(245,245,245);doc.roundedRect(12,y,186,13,2,2,'F');
+  doc.setFontSize(8);doc.setTextColor(150,150,150);
+  doc.text('PCOSense is for clinical decision-support only and does not replace professional medical advice.',16,y+5);
+  doc.text('Please consult your healthcare provider for diagnosis and treatment decisions.',16,y+10);
+  doc.save('PCOSense_Report.pdf');
+}
+
+function resetApp(){
+  ST={};
+  ['weight','height','bmi','tg','hdl','age'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('glycemic').value='';
+  document.getElementById('bmiTag').innerHTML='';
+  document.querySelectorAll('.opt.sel').forEach(e=>e.classList.remove('sel'));
+  ['step1','step2','step3'].forEach((id,i)=>{document.getElementById(id).style.display=i===0?'block':'none';});
+  document.getElementById('progFill').style.width='33%';
+  document.getElementById('progLbl').textContent='Step 1 of 3 — Cardiometabolic';
+  document.getElementById('progPct').textContent='33%';
+  document.getElementById('hmGrid').innerHTML='<div class="no-data">Complete the assessment to view your QoL heatmap.</div>';
+  document.getElementById('adhRisks').innerHTML='';
+  document.getElementById('gNum').textContent='—';
+  document.getElementById('gArc').style.strokeDashoffset='157';
+  document.getElementById('adhLev').textContent='Complete assessment first';
+  document.getElementById('adhLev').style.color='var(--muted)';
+  goTab('home');
+}
+
+buildForms();
+</script>
+</body>
+</html>
